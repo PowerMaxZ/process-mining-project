@@ -6,8 +6,12 @@ df = pd.read_csv('Dhana-Loans-2025.csv', parse_dates=['start_time', 'end_time'])
 df['Activity'] = df['Activity'].astype(str).str.strip()
 df['LoanID'] = df['LoanID'].astype(str).str.strip()
 
+# Only keep cases that have 'W_Validate application' activity
+valid_loanids = df[df['Activity'] == 'W_Validate application']['LoanID'].unique()
+df = df[df['LoanID'].isin(valid_loanids)]
+
 # Sort by LoanID and end_time to ensure correct order of activities
-df = df.sort_values(['LoanID', 'end_time'])
+df = df.sort_values(['LoanID', 'start_time'])
 
 # 1. Count number of incompleteness events per application
 incomplete_counts = (
@@ -41,7 +45,7 @@ acceptance_by_incompleteness['acceptance_rate'] = (
     acceptance_by_incompleteness['accepted_cases'] / acceptance_by_incompleteness['total_cases'] * 100
 )
 
-print("\nAcceptance rates by number of incompleteness events:")
+print("\nAcceptance rates by number of incompleteness events (cases with W_Validate application):")
 print(acceptance_by_incompleteness.to_string(index=False, float_format='%.2f'))
 
 # 5. Additional: Average incompleteness for accepted vs not accepted
